@@ -1,0 +1,100 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+*.out
+
+# dotenv environment variables
+.env
+.env.*
+
+# test coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# SQLAlchemy / Alembic
+alembic.ini
+migrations/
+
+# Unit test / test data
+tests/__pycache__/
+test-results/
+
+# Node modules (if using frontend)
+node_modules/
+
+# Selenium / WebDriver downloads
+*.crdownload
+chromedriver
+geckodriver
+
+# Data files (optional)
+*.csv
+*.tsv
+*.xls
+*.xlsx
+*.parquet
+*.json
+*.db
+*.sqlite
+*.zip
+
+# System-specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini

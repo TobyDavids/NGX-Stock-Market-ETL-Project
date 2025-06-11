@@ -1,0 +1,17 @@
+2025-06-11 - Log cleared
+2025-06-11 - Starting Chrome WebDriver service.
+2025-06-11 - Navigating to URL: https://ngxgroup.com/exchange/data/equities-price-list/
+2025-06-11 - Attempt 1: Waiting for table to load.
+2025-06-11 - Clicking filter button.
+2025-06-11 - Selecting filter option for more rows.
+2025-06-11 - Extracting table HTML.
+2025-06-11 - Extracting table header.
+2025-06-11 - Extracted headers: ['Company', 'PreviousClosingPrice', 'Opening Price', 'High', 'Low', 'Close', 'Change', 'Trades', 'Volume', 'Value', 'Trade Date']
+2025-06-11 - Extracting table body.
+2025-06-11 - Extracted 148 rows from table body.
+2025-06-11 - Creating DataFrame and saving to CSV.
+2025-06-11 - Data saved to /Users/user/Documents/untitled folder/data/data_2025-06-11.csv
+2025-06-11 - Sending email with CSV attachment...
+2025-06-11 - Email sent successfully: {'id': '9545ce11-4208-484b-b6ab-13bba00505cd'}
+2025-06-11 - Email sent successfully
+2025-06-11 - Browser closed. Scraping complete.
