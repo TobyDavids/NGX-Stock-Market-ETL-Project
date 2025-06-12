@@ -49,24 +49,8 @@ jobs:
 
       - name: Execute python script with debug output
         run: |
-          echo "=== Python Environment ==="
-          python --version
-          pip list
-          echo "=== Current Directory ==="
-          pwd
-          echo "=== Directory Contents ==="
-          ls -la
-          echo "=== Running Script ==="
-          python -u scrap.py 2>&1 | tee python_output.log
+          python scrap.py 
 
-      - name: Debug directory contents
-        run: |
-          echo "=== Current Directory Contents ==="
-          ls -la
-          echo "=== Data Directory Contents ==="
-          ls -la data/
-          echo "=== Logs Directory Contents ==="
-          ls -la logs/
 
       - name: Check log contents
         run: |
@@ -82,8 +66,7 @@ jobs:
           else
             echo "Python output log not found!"
           fi
-          echo "=== Python Environment Check ==="
-          python -c "import os; print('Current working directory:', os.getcwd()); print('Directory contents:', os.listdir('.')); print('Data directory contents:', os.listdir('data') if os.path.exists('data') else 'data directory not found'); print('Log directory contents:', os.listdir('logs') if os.path.exists('logs') else 'logs directory not found')"
+
 
       - name: Find most recent CSV file
         id: find_csv
@@ -96,7 +79,7 @@ jobs:
               echo "Found CSV file: $LATEST_CSV"
               exit 0
             fi
-            echo "Waiting for CSV file to be created... (attempt $i/30)"
+            echo "Waiting for CSV file to be created (attempt $i/30)"
             sleep 1
           done
           echo "No CSV file found after 30 seconds"
