@@ -29,7 +29,7 @@ log_file = os.path.join(log_dir, "web_scrap_log.txt")
 # Time format and timestamp
 time_format = "%Y-%m-%d %H:%M:%S"
 now = datetime.now()
-time_str = now.strftime("%Y-%m-%d") 
+time_str = now.strftime("%Y-%m-%d")
 
 # Define target URL and output CSV filename
 url = "https://ngxgroup.com/exchange/data/equities-price-list/"
@@ -44,7 +44,6 @@ with open(log_file, "w") as f:
 
 
 def log_message(time_str, message):
-
     with open(log_file, "a") as f:
         f.write(f"{time_str} - {message}\n")
 
@@ -104,7 +103,7 @@ def send_email(attachment_path):
 
         params = {
             "from": "Stocks Automation <no-reply@dataengineeringcommunity.com>",
-            "to": ["tobye070@gmail.com", "chideraozigbo@gmail.com" ],
+            "to": ["chideraozigbo@gmail.com"],
             "subject": f"Stock Data Report - {time_str}",
             "html": html_content,
             "attachments": [
@@ -123,8 +122,23 @@ def send_email(attachment_path):
         return False
 
 
-def scrape_data():
+def handle_cookie_consent(driver, wait):
+    try:
+        # Wait for cookie consent button and click it
+        cookie_button = wait.until(
+            EC.element_to_be_clickable((By.CLASS_NAME, "cli_settings_button"))
+        )
+        driver.execute_script("arguments[0].click();", cookie_button)
+        log_message(time_str, "Closed cookie consent popup")
+        time.sleep(1)  # Wait for popup to close
+    except Exception as e:
+        log_message(
+            time_str,
+            f"No cookie consent popup found or error handling it: {e}",
+        )
 
+
+def scrape_data():
     service = Service(driver_dir)
     log_message(time_str, "Starting Chrome WebDriver service.")
 
@@ -143,7 +157,7 @@ def scrape_data():
     options.add_argument("--aggressive-cache-discard")
 
     driver = webdriver.Chrome(service=service, options=options)
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 20)  # Increased timeout to 20 seconds
     log_message(time_str, f"Navigating to URL: {url}")
     driver.get(url)
 
@@ -152,29 +166,49 @@ def scrape_data():
             log_message(
                 time_str, f"Attempt {attempt+1}: Waiting for table to load."
             )
+
+            # Handle cookie consent first
+            handle_cookie_consent(driver, wait)
+
+            # Wait for table to be present
             wait.until(
                 EC.presence_of_element_located(
                     (By.ID, "latestdiclosuresEquities_wrapper")
                 )
             )
 
+            # Wait a bit for any overlays to disappear
+            time.sleep(2)
+
             log_message(time_str, "Clicking filter button.")
-            filter_button = driver.find_element(
-                By.CLASS_NAME, "dataTables_length"
+            filter_button = wait.until(
+                EC.presence_of_element_located(
+                    (By.CLASS_NAME, "dataTables_length")
+                )
             )
-            filter_button.click()
+            # Use JavaScript to click the button
+            driver.execute_script("arguments[0].click();", filter_button)
             time.sleep(1)
 
             log_message(time_str, "Selecting filter option for more rows.")
-            filter_option = driver.find_element(
-                By.XPATH,
-                "//*[@id='latestdiclosuresEquities_length']/label/select/option[4]",
+            filter_option = wait.until(
+                EC.presence_of_element_located(
+                    (
+                        By.XPATH,
+                        "//*[@id='latestdiclosuresEquities_length']/label/select/option[4]",
+                    )
+                )
             )
-            filter_option.click()
-            time.sleep(1)
+            # Use JavaScript to click the option
+            driver.execute_script("arguments[0].click();", filter_option)
+            time.sleep(2)  # Increased wait time after selection
 
             log_message(time_str, "Extracting table HTML.")
-            table = driver.find_element(By.ID, "latestdiclosuresEquities")
+            table = wait.until(
+                EC.presence_of_element_located(
+                    (By.ID, "latestdiclosuresEquities")
+                )
+            )
             table_html = table.get_attribute("outerHTML")
             soup = BeautifulSoup(table_html, "html.parser")
 
@@ -231,7 +265,7 @@ def scrape_data():
             log_message(time_str, f"Error: {e}")
             if attempt < 2:
                 log_message(time_str, "Retrying")
-                time.sleep(1)
+                time.sleep(2)  # Increased wait time between retries
                 continue
             driver.quit()
             log_message(time_str, "Browser closed after error.")
