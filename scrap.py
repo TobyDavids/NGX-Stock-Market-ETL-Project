@@ -36,8 +36,8 @@ url = "https://ngxgroup.com/exchange/data/equities-price-list/"
 filename = os.path.join(data_dir, f"data_{time_str}.csv")
 
 # ChromeDriver path
-driver_dir = "/Users/user/Downloads/chromedriver-mac-arm64/chromedriver"
-# driver_dir = "/usr/local/bin/chromedriver"
+# driver_dir = "/Users/user/Downloads/chromedriver-mac-arm64/chromedriver"
+driver_dir = "/usr/local/bin/chromedriver"
 
 with open(log_file, "w") as f:
     f.write(f"{time_str} - Log cleared\n")
