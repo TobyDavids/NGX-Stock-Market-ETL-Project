@@ -2,7 +2,7 @@ name: Run Selenium Scraper
 
 on:
   schedule:
-   - cron: "0 16 * * 1-5" # Runs at 5 PM UTC+1 (Nigeria time), Monday to Friday
+    - cron: "0 16 * * 1-5" # Runs at 5 PM UTC+1 (Nigeria time), Monday to Friday
   workflow_dispatch:
 
 jobs:
@@ -24,9 +24,9 @@ jobs:
           sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           sudo apt-get update
           sudo apt-get -y install google-chrome-stable
+
       - name: Install ChromeDriver
         run: |
-          # Using specific ChromeDriver version for Chrome I used 132
           CHROMEDRIVER_VERSION="137.0.7151.70"
           echo "Installing ChromeDriver version: $CHROMEDRIVER_VERSION"
           wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip"
@@ -43,6 +43,112 @@ jobs:
         run: |
           echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" > .env
 
-      - name: execute python script
+      - name: Create required directories
+        run: |
+          mkdir -p data logs
 
+      - name: Execute python script
         run: python scrap.py
+
+      - name: Check if file was generated
+        run: |
+          if [ -f "data/data_$(date +%Y-%m-%d).csv" ]; then
+            echo "File was generated successfully"
+            ls -l data/
+          else
+            echo "File was not generated"
+            exit 1
+          fi
+      - name: Install jq
+        run: |
+          sudo apt-get install jq
+
+      - name: Send email using Resend
+        run: |
+          # Get the generated file
+          CSV_FILE="data/data_$(date +%Y-%m-%d).csv"
+
+          # Create the email content
+          cat << EOF > email.html
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Stock Data Report</title>
+          </head>
+          <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+              <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                      <div style="text-align: center; margin-bottom: 30px;">
+                          <h1 style="color: #2c3e50; margin: 0; font-size: 24px;">Stock Data Report</h1>
+                          <p style="color: #7f8c8d; margin: 10px 0 0 0; font-size: 16px;">Generated on $(date +%Y-%m-%d)</p>
+                      </div>
+                      
+                      <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
+                          <h2 style="color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;">Report Summary</h2>
+                          <p style="color: #34495e; margin: 0; line-height: 1.6;">
+                              Please find attached the latest stock data report. This report contains the most up-to-date information from the Nigerian Stock Exchange.
+                          </p>
+                      </div>
+
+                      <div style="background-color: #e8f4f8; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
+                          <h2 style="color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;">Attachment</h2>
+                          <p style="color: #34495e; margin: 0; line-height: 1.6;">
+                              The report is attached to this email in CSV format. You can open it with any spreadsheet application.
+                          </p>
+                      </div>
+
+                      <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                          <p style="color: #7f8c8d; margin: 0; font-size: 14px;">
+                              This is an automated report. Please do not reply to this email.
+                          </p>
+                      </div>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+
+          # Send email using curl and Resend API
+          curl -X POST 'https://api.resend.com/emails' \
+            -H 'Authorization: Bearer ${{ secrets.RESEND_API_KEY }}' \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "from": "Stocks Automation <no-reply@dataengineeringcommunity.com>",
+              "to": ["tobye070@gmail.com", "chideraozigbo@gmail.com"],
+              "subject": "Stock Data Report - '"$(date +%Y-%m-%d)"'",
+              "html": '"$(cat email.html | jq -Rs .)"',
+              "attachments": [
+                {
+                  "filename": "'"$(basename "$CSV_FILE")"'",
+                  "content": "'"$(base64 -w 0 "$CSV_FILE")"'"
+                }
+              ]
+            }'
+
+      - name: Check logs
+        run: |
+          if [ -f "logs/web_scrap_log.txt" ]; then
+            echo "=== Log Contents ==="
+            cat logs/web_scrap_log.txt
+          else
+            echo "Log file not found"
+            exit 1
+          fi
+
+      - name: Upload generated file as artifact
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: stock-data
+          path: data/
+          retention-days: 7
+
+      - name: Upload logs as artifact
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: scraping-logs
+          path: logs/
+          retention-days: 7
