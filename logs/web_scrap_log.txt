@@ -1,17 +1,25 @@
-2025-06-11 - Log cleared
-2025-06-11 - Starting Chrome WebDriver service.
-2025-06-11 - Navigating to URL: https://ngxgroup.com/exchange/data/equities-price-list/
-2025-06-11 - Attempt 1: Waiting for table to load.
-2025-06-11 - Clicking filter button.
-2025-06-11 - Selecting filter option for more rows.
-2025-06-11 - Extracting table HTML.
-2025-06-11 - Extracting table header.
-2025-06-11 - Extracted headers: ['Company', 'PreviousClosingPrice', 'Opening Price', 'High', 'Low', 'Close', 'Change', 'Trades', 'Volume', 'Value', 'Trade Date']
-2025-06-11 - Extracting table body.
-2025-06-11 - Extracted 148 rows from table body.
-2025-06-11 - Creating DataFrame and saving to CSV.
-2025-06-11 - Data saved to /Users/user/Documents/untitled folder/data/data_2025-06-11.csv
-2025-06-11 - Sending email with CSV attachment...
-2025-06-11 - Email sent successfully: {'id': '9545ce11-4208-484b-b6ab-13bba00505cd'}
-2025-06-11 - Email sent successfully
-2025-06-11 - Browser closed. Scraping complete.
+2025-06-12 - Log cleared
+2025-06-12 - Starting Chrome WebDriver service.
+2025-06-12 - Navigating to URL: https://ngxgroup.com/exchange/data/equities-price-list/
+2025-06-12 - Attempt 1: Waiting for table to load.
+2025-06-12 - Error: Message: 
+Stacktrace:
+0   chromedriver                        0x0000000100d76654 cxxbridge1$str$ptr + 2723108
+1   chromedriver                        0x0000000100d6e8c8 cxxbridge1$str$ptr + 2690968
+2   chromedriver                        0x00000001008c2714 cxxbridge1$string$len + 90428
+3   chromedriver                        0x00000001009097c0 cxxbridge1$string$len + 381416
+4   chromedriver                        0x000000010094ade8 cxxbridge1$string$len + 649232
+5   chromedriver                        0x00000001008fd9c8 cxxbridge1$string$len + 332784
+6   chromedriver                        0x0000000100d3a278 cxxbridge1$str$ptr + 2476360
+7   chromedriver                        0x0000000100d3d50c cxxbridge1$str$ptr + 2489308
+8   chromedriver                        0x0000000100d1ba64 cxxbridge1$str$ptr + 2351412
+9   chromedriver                        0x0000000100d3dd94 cxxbridge1$str$ptr + 2491492
+10  chromedriver                        0x0000000100d0cd58 cxxbridge1$str$ptr + 2290728
+11  chromedriver                        0x0000000100d5dd60 cxxbridge1$str$ptr + 2622512
+12  chromedriver                        0x0000000100d5deec cxxbridge1$str$ptr + 2622908
+13  chromedriver                        0x0000000100d6e514 cxxbridge1$str$ptr + 2690020
+14  libsystem_pthread.dylib             0x000000019ce542e4 _pthread_start + 136
+15  libsystem_pthread.dylib             0x000000019ce4f0fc thread_start + 8
+
+2025-06-12 - Retrying
+2025-06-12 - Attempt 2: Waiting for table to load.

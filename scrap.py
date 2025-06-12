@@ -21,7 +21,7 @@ log_dir = os.path.join(home_dir, "logs")
 data_dir = os.path.join(home_dir, "data")
 os.makedirs(data_dir, exist_ok=True)  # Create 'data' if it doesn't exist
 
-os.makedirs(log_dir, exist_ok=True)  # Create 'data' if it doesn't exist
+os.makedirs(log_dir, exist_ok=True)  # Create 'log' if it doesn't exist
 
 # Define log file path
 log_file = os.path.join(log_dir, "web_scrap_log.txt")
@@ -36,8 +36,8 @@ url = "https://ngxgroup.com/exchange/data/equities-price-list/"
 filename = os.path.join(data_dir, f"data_{time_str}.csv")
 
 # ChromeDriver path
-# driver_dir = "/Users/user/Downloads/chromedriver-mac-arm64/chromedriver"
-driver_dir = "/usr/local/bin/chromedriver"
+driver_dir = "/Users/user/Downloads/chromedriver-mac-arm64/chromedriver"
+# driver_dir = "/usr/local/bin/chromedriver"
 
 with open(log_file, "w") as f:
     f.write(f"{time_str} - Log cleared\n")
@@ -103,7 +103,7 @@ def send_email(attachment_path):
         """
 
         params = {
-            "from": "Stocks Automation <stocks@dataengineeringcommunity.com>",
+            "from": "Stocks Automation <no-reply@dataengineeringcommunity.com>",
             "to": ["tobye070@gmail.com", "chideraozigbo@gmail.com" ],
             "subject": f"Stock Data Report - {time_str}",
             "html": html_content,
@@ -217,7 +217,7 @@ def scrape_data():
                 log_message(time_str, f"Data saved to {filename}")
 
                 # Send email with the CSV file
-                log_message(time_str, "Sending email with CSV attachment...")
+                log_message(time_str, "Sending email with CSV attachment.")
                 if send_email(filename):
                     log_message(time_str, "Email sent successfully")
                 else:

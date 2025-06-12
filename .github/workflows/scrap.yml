@@ -2,7 +2,7 @@ name: Run Selenium Scraper
 
 on:
   schedule:
-    - cron: "0 17 * * 1-5" # Runs Monday to Friday at 5pm.
+   - cron: "0 16 * * 1-5" # Runs at 5 PM UTC+1 (Nigeria time), Monday to Friday
   workflow_dispatch:
 
 jobs:
