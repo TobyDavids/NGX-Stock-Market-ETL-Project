@@ -104,7 +104,7 @@ def send_email(attachment_path):
 
         params = {
             "from": "Stocks Automation <stocks@dataengineeringcommunity.com>",
-            "to": ["tobye070@gmail.com"],
+            "to": ["tobye070@gmail.com", "chideraozigbo@gmail.com" ],
             "subject": f"Stock Data Report - {time_str}",
             "html": html_content,
             "attachments": [
