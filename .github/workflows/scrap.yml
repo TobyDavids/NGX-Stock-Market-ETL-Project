@@ -127,28 +127,3 @@ jobs:
               ]
             }'
 
-      - name: Check logs
-        run: |
-          if [ -f "logs/web_scrap_log.txt" ]; then
-            echo "=== Log Contents ==="
-            cat logs/web_scrap_log.txt
-          else
-            echo "Log file not found"
-            exit 1
-          fi
-
-      - name: Upload generated file as artifact
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: stock-data
-          path: data/
-          retention-days: 7
-
-      - name: Upload logs as artifact
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: scraping-logs
-          path: logs/
-          retention-days: 7
