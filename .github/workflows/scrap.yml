@@ -50,24 +50,23 @@ jobs:
       - name: Execute python script
         run: python scrap.py
 
-      - name: Check if file was generated
+      - name: Find most recent CSV file
+        id: find_csv
         run: |
-          if [ -f "data/data_$(date +%Y-%m-%d).csv" ]; then
-            echo "File was generated successfully"
-            ls -l data/
-          else
-            echo "File was not generated"
+          LATEST_CSV=$(ls -t data/data_*.csv | head -n1)
+          echo "latest_csv=$LATEST_CSV" >> $GITHUB_OUTPUT
+          if [ -z "$LATEST_CSV" ]; then
+            echo "No CSV file found"
             exit 1
           fi
+          echo "Found CSV file: $LATEST_CSV"
+
       - name: Install jq
         run: |
           sudo apt-get install jq
 
       - name: Send email using Resend
         run: |
-          # Get the generated file
-          CSV_FILE="data/data_$(date +%Y-%m-%d).csv"
-
           # Create the email content
           cat << EOF > email.html
           <!DOCTYPE html>
@@ -121,9 +120,8 @@ jobs:
               "html": '"$(cat email.html | jq -Rs .)"',
               "attachments": [
                 {
-                  "filename": "'"$(basename "$CSV_FILE")"'",
-                  "content": "'"$(base64 -w 0 "$CSV_FILE")"'"
+                  "filename": "'"$(basename "${{ steps.find_csv.outputs.latest_csv }}")"'",
+                  "content": "'"$(base64 -w 0 "${{ steps.find_csv.outputs.latest_csv }}")"'"
                 }
               ]
             }'
-
