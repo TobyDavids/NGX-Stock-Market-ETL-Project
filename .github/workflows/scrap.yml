@@ -50,16 +50,31 @@ jobs:
       - name: Execute python script
         run: python scrap.py
 
+      - name: Debug directory contents
+        run: |
+          echo "=== Current Directory Contents ==="
+          ls -la
+          echo "=== Data Directory Contents ==="
+          ls -la data/
+          echo "=== Logs Directory Contents ==="
+          ls -la logs/
+
       - name: Find most recent CSV file
         id: find_csv
         run: |
-          LATEST_CSV=$(ls -t data/data_*.csv | head -n1)
-          echo "latest_csv=$LATEST_CSV" >> $GITHUB_OUTPUT
-          if [ -z "$LATEST_CSV" ]; then
-            echo "No CSV file found"
-            exit 1
-          fi
-          echo "Found CSV file: $LATEST_CSV"
+          # Wait for file to be created (up to 30 seconds)
+          for i in {1..30}; do
+            if ls data/data_*.csv 1> /dev/null 2>&1; then
+              LATEST_CSV=$(ls -t data/data_*.csv | head -n1)
+              echo "latest_csv=$LATEST_CSV" >> $GITHUB_OUTPUT
+              echo "Found CSV file: $LATEST_CSV"
+              exit 0
+            fi
+            echo "Waiting for CSV file to be created... (attempt $i/30)"
+            sleep 1
+          done
+          echo "No CSV file found after 30 seconds"
+          exit 1
 
       - name: Install jq
         run: |
