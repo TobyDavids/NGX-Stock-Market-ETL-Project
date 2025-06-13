@@ -126,7 +126,7 @@ def handle_cookie_consent(driver, wait):
     try:
         # Wait for cookie consent button and click it
         cookie_button = wait.until(
-            EC.element_to_be_clickable((By.CLASS_NAME, "cli_settings_button"))
+            EC.element_to_be_clickable((By.ID, "cookie_action_close_header"))
         )
         driver.execute_script("arguments[0].click();", cookie_button)
         log_message(time_str, "Closed cookie consent popup")
@@ -181,26 +181,22 @@ def scrape_data():
             time.sleep(2)
 
             log_message(time_str, "Clicking filter button.")
-            filter_button = wait.until(
-                EC.presence_of_element_located(
-                    (By.CLASS_NAME, "dataTables_length")
-                )
+            filter_button = driver.find_element(
+                By.CLASS_NAME, "dataTables_length"
             )
-            # Use JavaScript to click the button
-            driver.execute_script("arguments[0].click();", filter_button)
+            #  click the button
+            filter_button.click()
+            log_message(time_str, "Filter button clicked.")
             time.sleep(1)
 
             log_message(time_str, "Selecting filter option for more rows.")
-            filter_option = wait.until(
-                EC.presence_of_element_located(
-                    (
-                        By.XPATH,
-                        "//*[@id='latestdiclosuresEquities_length']/label/select/option[4]",
-                    )
-                )
+            filter_option = driver.find_element(
+                By.XPATH,
+                "//*[@id='latestdiclosuresEquities_length']/label/select/option[4]",
             )
-            # Use JavaScript to click the option
-            driver.execute_script("arguments[0].click();", filter_option)
+            #  click the option
+            filter_option.click()
+            log_message(time_str, "Filter option selected.")
             time.sleep(2)  # Increased wait time after selection
 
             log_message(time_str, "Extracting table HTML.")
@@ -250,12 +246,12 @@ def scrape_data():
                 df.to_csv(filename, index=False)
                 log_message(time_str, f"Data saved to {filename}")
 
-                # Send email with the CSV file
-                log_message(time_str, "Sending email with CSV attachment.")
-                if send_email(filename):
-                    log_message(time_str, "Email sent successfully")
-                else:
-                    log_message(time_str, "Failed to send email")
+                # # Send email with the CSV file
+                # log_message(time_str, "Sending email with CSV attachment.")
+                # if send_email(filename):
+                #     log_message(time_str, "Email sent successfully")
+                # else:
+                #     log_message(time_str, "Failed to send email")
             else:
                 log_message(time_str, "No data found to save.")
             driver.quit()
