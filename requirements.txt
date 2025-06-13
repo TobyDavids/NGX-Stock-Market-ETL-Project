@@ -2,4 +2,4 @@ beautifulsoup4==4.13.4
 pandas==2.3.0
 Requests==2.32.3
 selenium==4.33.0
-resend==2.10.0
+

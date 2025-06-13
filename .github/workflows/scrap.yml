@@ -50,13 +50,13 @@ jobs:
           if [ -f "logs/web_scrap_log.txt" ]; then
             cat logs/web_scrap_log.txt
           else
-            echo "Log file not found!"
+            echo "Log file not found"
           fi
           echo "=== Python Script Output ==="
           if [ -f "python_output.log" ]; then
             cat python_output.log
           else
-            echo "Python output log not found!"
+            echo "Python output log not found"
           fi
 
 
@@ -131,7 +131,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{
               "from": "Stocks Automation <no-reply@dataengineeringcommunity.com>",
-              "to": ["chideraozigbo@gmail.com"],
+              "to": ["tobye070@gmail.com", "chideraozigbo@gmail.com"],
               "subject": "Stock Data Report - '"$(date +%Y-%m-%d)"'",
               "html": '"$(cat email.html | jq -Rs .)"',
               "attachments": [
