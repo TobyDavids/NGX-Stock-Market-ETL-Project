@@ -131,7 +131,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{
               "from": "Stocks Automation <no-reply@dataengineeringcommunity.com>",
-              "to": ["tobye070@gmail.com", "chideraozigbo@gmail.com"],
+              "to": ["tobye070@gmail.com"],
               "subject": "Stock Data Report - '"$(date +%Y-%m-%d)"'",
               "html": '"$(cat email.html | jq -Rs .)"',
               "attachments": [
