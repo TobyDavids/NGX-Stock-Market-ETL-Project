@@ -10,8 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import os
-import resend
-import base64
+
 
 # Define base directory
 home_dir = os.getcwd()
@@ -46,80 +45,6 @@ with open(log_file, "w") as f:
 def log_message(time_str, message):
     with open(log_file, "a") as f:
         f.write(f"{time_str} - {message}\n")
-
-
-def send_email(attachment_path):
-    try:
-        resend.api_key = os.getenv("RESEND_API_KEY")
-
-        with open(attachment_path, "rb") as f:
-            attachment_content = f.read()
-            # Encode the content in base64
-            attachment_content = base64.b64encode(attachment_content).decode(
-                "utf-8"
-            )
-
-        # HTML email template
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Stock Data Report</title>
-        </head>
-        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h1 style="color: #2c3e50; margin: 0; font-size: 24px;">Stock Data Report</h1>
-                        <p style="color: #7f8c8d; margin: 10px 0 0 0; font-size: 16px;">Generated on {time_str}</p>
-                    </div>
-                    
-                    <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
-                        <h2 style="color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;">Report Summary</h2>
-                        <p style="color: #34495e; margin: 0; line-height: 1.6;">
-                            Please find attached the latest stock data report. This report contains the most up-to-date information from the Nigerian Stock Exchange.
-                        </p>
-                    </div>
-
-                    <div style="background-color: #e8f4f8; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
-                        <h2 style="color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;">Attachment</h2>
-                        <p style="color: #34495e; margin: 0; line-height: 1.6;">
-                            The report is attached to this email in CSV format. You can open it with any spreadsheet application.
-                        </p>
-                    </div>
-
-                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                        <p style="color: #7f8c8d; margin: 0; font-size: 14px;">
-                            This is an automated report. Please do not reply to this email.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-
-        params = {
-            "from": "Stocks Automation <no-reply@dataengineeringcommunity.com>",
-            "to": ["chideraozigbo@gmail.com"],
-            "subject": f"Stock Data Report - {time_str}",
-            "html": html_content,
-            "attachments": [
-                {
-                    "filename": os.path.basename(attachment_path),
-                    "content": attachment_content,
-                }
-            ],
-        }
-
-        email = resend.Emails.send(params)
-        log_message(time_str, f"Email sent successfully: {email}")
-        return True
-    except Exception as e:
-        log_message(time_str, f"Error sending email: {e}")
-        return False
 
 
 def handle_cookie_consent(driver, wait):
@@ -246,12 +171,6 @@ def scrape_data():
                 df.to_csv(filename, index=False)
                 log_message(time_str, f"Data saved to {filename}")
 
-                # # Send email with the CSV file
-                # log_message(time_str, "Sending email with CSV attachment.")
-                # if send_email(filename):
-                #     log_message(time_str, "Email sent successfully")
-                # else:
-                #     log_message(time_str, "Failed to send email")
             else:
                 log_message(time_str, "No data found to save.")
             driver.quit()

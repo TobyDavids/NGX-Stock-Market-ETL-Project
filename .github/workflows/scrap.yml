@@ -39,14 +39,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Create .env file
-        run: |
-          echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" > .env
-
-      - name: Create required directories
-        run: |
-          mkdir -p data logs
-
       - name: Execute python script with debug output
         run: |
           python scrap.py 
@@ -139,7 +131,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{
               "from": "Stocks Automation <no-reply@dataengineeringcommunity.com>",
-              "to": ["tobye070@gmail.com", "chideraozigbo@gmail.com"],
+              "to": ["chideraozigbo@gmail.com"],
               "subject": "Stock Data Report - '"$(date +%Y-%m-%d)"'",
               "html": '"$(cat email.html | jq -Rs .)"',
               "attachments": [
