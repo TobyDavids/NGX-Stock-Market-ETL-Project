@@ -76,7 +76,7 @@ def send_ngx_data_email(csv_file_path, data_rows, date_str):
     """
     try:
         # Get receiver email from Variables
-        receiver_email = "tobye070@gmail.com, chideraozigbo@gmail.com"
+        receiver_email = "chideraozigbo@gmail.com"
 
         subject = f"NGX Stock Market Data - {date_str}"
 
