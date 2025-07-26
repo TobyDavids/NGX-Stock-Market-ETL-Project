@@ -1,9 +1,3 @@
-"""
-Logging configuration for NGX Stock Market ETL DAG
-
-This module provides a centralized logging configuration using Python's built-in logging package.
-"""
-
 import logging
 import os
 from datetime import datetime
@@ -99,13 +93,13 @@ def log_scraping_end(logger, success=True, data_rows=0):
 
 def log_attempt(logger, attempt_number, max_attempts=3):
     """Log scraping attempt."""
-    logger.info(f"Attempt {attempt_number}/{max_attempts}: Processing...")
+    logger.info(f"Attempt {attempt_number}/{max_attempts}: Processing")
 
 
 def log_error(logger, error_msg, retry=True):
     """Log error with retry information."""
     if retry:
-        logger.warning(f"Error occurred: {error_msg} - Will retry...")
+        logger.warning(f"Error occurred: {error_msg} - Will retry")
     else:
         logger.error(f"Final error: {error_msg}")
 

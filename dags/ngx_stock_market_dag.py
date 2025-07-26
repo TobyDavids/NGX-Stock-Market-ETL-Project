@@ -4,8 +4,8 @@ NGX Stock Market ETL DAG
 This DAG scrapes stock market data from NGX Group website,
 sends the data via email, and cleans up temporary files.
 
-Author: Your Name
-Date: 2024
+Author: Chidera Ozigbo
+Date: 2025
 """
 
 from datetime import datetime, timedelta
@@ -23,7 +23,7 @@ from notifications.email_notifications import task_state_alert
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime(2024, 1, 1),
+    "start_date": datetime(2025, 7, 25),
     "email_on_failure": False,  
     "email_on_retry": False,
     "retries": 1,
