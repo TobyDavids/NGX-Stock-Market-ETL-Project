@@ -6,7 +6,7 @@ This module contains email notification functions for task alerts and general em
 
 from airflow.models import Variable
 import os
-from ..config.email_config import send_email
+from config.email_config import send_email
 
 
 def notification_email(context, state):
