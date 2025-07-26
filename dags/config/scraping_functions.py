@@ -7,8 +7,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import os
 from notifications.email_notifications import send_ngx_data_email
 
@@ -38,7 +38,6 @@ def handle_cookie_consent(driver, wait):
         print(f"Cookie consent: No popup found or error: {e}")
 
 
-
 def scrape_ngx_data(**context):
     """Main scraping function for NGX stock market data."""
     # Setup directories
@@ -54,13 +53,11 @@ def scrape_ngx_data(**context):
     # Start logging
     print("=" * 60)
     print("Starting NGX Stock Market Data Scraping Process")
-    print("=" * 60)
-    print(f"Setup: ChromeDriver path")
 
     # Initialize driver with improved error handling
     driver = None
     try:
-        options = webdriver.ChromeOptions()
+        options = Options()
         options.add_argument("--ignore-ssl-errors=yes")
         options.add_argument("--ignore-certificate-errors")
         user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
@@ -71,10 +68,11 @@ def scrape_ngx_data(**context):
 
         print("WebDriver: Creating Remote Chrome WebDriver instance")
 
-        remote_webdriver = "remote_chromedriver"
+        remote_webdriver = "selenium"
         driver = webdriver.Remote(
             command_executor=f"http://{remote_webdriver}:4444/wd/hub",
             options=options,
+            desired_capabilities=DesiredCapabilities.CHROME,
         )
         wait = WebDriverWait(driver, 20)
 
