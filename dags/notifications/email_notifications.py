@@ -35,7 +35,6 @@ def notification_email(context, state):
     # If no email is found, use a default from Variables
     if not email_receiver:
         email_receiver = "tobye070@gmail.com, chideraozigbo@gmail.com"
-        
 
     if isinstance(email_receiver, list):
         email_receiver = ", ".join(email_receiver)
