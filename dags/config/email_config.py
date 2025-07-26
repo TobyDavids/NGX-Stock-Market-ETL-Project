@@ -6,6 +6,7 @@ from email import encoders
 from airflow.models import Variable
 import os
 
+
 def send_email(
     receiver, subject, body, attachment_path=None, content_type="html"
 ):
