@@ -1,4 +1,4 @@
-name: Deploy DAGs 
+name: Deploy DAGs
 
 on:
   push:
@@ -7,12 +7,11 @@ on:
       - 'requirements.txt'
     branches:
       - main
-    
 
 jobs:
   sync-dags:
     name: Sync DAGs & Update Missing Requirements
-    runs-on: airflow  
+    runs-on: airflow
 
     steps:
       - name: Checkout repository
@@ -44,7 +43,7 @@ jobs:
             fi
           done < "$GITHUB_REQ"
 
-          echo "missing=$missing" >> $GITHUB_OUTPUTg" >> $GITHUB_OUTPUT
+          echo "missing=$missing" >> $GITHUB_OUTPUT
 
       - name: Rebuild Airflow if requirements were updated
         if: steps.check_missing.outputs.missing == 'true'

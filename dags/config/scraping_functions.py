@@ -52,7 +52,7 @@ def create_chrome_driver(driver_path, logger):
         # Create service with explicit timeout settings
         service = Service(
             executable_path=driver_path,
-            service_args=["--verbose"],  # Add verbose logging
+            service_args=["--verbose"],  
         )
 
         # Configure Chrome options
