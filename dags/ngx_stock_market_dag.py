@@ -28,8 +28,7 @@ default_args = {
     "email_on_retry": False,
     "retries": 1,
     "retry_delay": timedelta(seconds=10),
-    "on_failure_callback": task_state_alert,
-    "on_success_callback": task_state_alert,
+    "on_failure_callback": task_state_alert
 }
 
 # DAG definition
