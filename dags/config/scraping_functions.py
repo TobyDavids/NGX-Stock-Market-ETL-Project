@@ -11,14 +11,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import os
 from notifications.email_notifications import send_ngx_data_email
-from .logging_config import (
-    get_logger,
-    log_scraping_start,
-    log_scraping_end,
-    log_attempt,
-    log_error,
-    log_step,
-)
 
 
 def setup_directories():
@@ -33,65 +25,22 @@ def setup_directories():
     return home_dir, log_dir, data_dir
 
 
-def handle_cookie_consent(driver, wait, logger):
+def handle_cookie_consent(driver, wait):
     """Handle cookie consent popup if present."""
     try:
         cookie_button = wait.until(
             EC.element_to_be_clickable((By.ID, "cookie_action_close_header"))
         )
         driver.execute_script("arguments[0].click();", cookie_button)
-        log_step(logger, "Cookie consent", "Closed cookie consent popup")
+        print("Cookie consent: Closed cookie consent popup")
         time.sleep(1)
     except Exception as e:
-        log_step(logger, "Cookie consent", f"No popup found or error: {e}")
+        print(f"Cookie consent: No popup found or error: {e}")
 
-
-def create_chrome_driver(logger):
-    """Create Chrome WebDriver with proper configuration and error handling."""
-    try:
-        # Configure Chrome options
-        options = webdriver.ChromeOptions()
-        options.add_argument("--ignore-ssl-errors=yes")
-        options.add_argument("--ignore-certificate-errors")
-        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
-        options.add_argument(f"user-agent={user_agent}")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--headless")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--start-maximized")
-
-        log_step(
-            logger, "WebDriver", "Creating Remote Chrome WebDriver instance"
-        )
-
-        remote_webdriver = "remote_chromedriver"
-        driver = webdriver.Remote(
-            command_executor=f"http://{remote_webdriver}:4444/wd/hub",
-            options=options,
-        )
-
-        driver.set_page_load_timeout(30)
-        driver.implicitly_wait(10)
-
-        log_step(
-            logger, "WebDriver", "Remote Chrome WebDriver created successfully"
-        )
-        return driver
-
-    except Exception as e:
-        log_error(
-            logger, f"Failed to create Chrome WebDriver: {str(e)}", retry=False
-        )
-        raise
 
 
 def scrape_ngx_data(**context):
     """Main scraping function for NGX stock market data."""
-    # Setup logger
-    logger = get_logger("ngx_scraper")
-
     # Setup directories
     home_dir, log_dir, data_dir = setup_directories()
 
@@ -102,35 +51,49 @@ def scrape_ngx_data(**context):
     url = "https://ngxgroup.com/exchange/data/equities-price-list/"
     filename = os.path.join(data_dir, f"data_{time_str}.csv")
 
-
     # Start logging
-    log_scraping_start(logger)
-    log_step(logger, "Setup", f"ChromeDriver path")
+    print("=" * 60)
+    print("Starting NGX Stock Market Data Scraping Process")
+    print("=" * 60)
+    print(f"Setup: ChromeDriver path")
 
     # Initialize driver with improved error handling
     driver = None
     try:
-        driver = create_chrome_driver(logger)
+        options = webdriver.ChromeOptions()
+        options.add_argument("--ignore-ssl-errors=yes")
+        options.add_argument("--ignore-certificate-errors")
+        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+        options.add_argument(f"user-agent={user_agent}")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--headless")
+
+        print("WebDriver: Creating Remote Chrome WebDriver instance")
+
+        remote_webdriver = "remote_chromedriver"
+        driver = webdriver.Remote(
+            command_executor=f"http://{remote_webdriver}:4444/wd/hub",
+            options=options,
+        )
         wait = WebDriverWait(driver, 20)
 
-        log_step(logger, "Navigation", f"Navigating to URL: {url}")
+        print(f"Navigation: Navigating to URL: {url}")
         driver.get(url)
 
     except Exception as e:
         if driver:
             driver.quit()
-        log_error(
-            logger, f"Failed to initialize Chrome WebDriver: {e}", retry=False
-        )
+        print(f"Failed to initialize Chrome WebDriver: {e}")
         raise Exception(f"Chrome WebDriver initialization failed: {e}")
 
     for attempt in range(3):
         try:
-            log_attempt(logger, attempt + 1, 3)
-            log_step(logger, "Table loading", "Waiting for table to load")
+            print(f"Attempt {attempt + 1}/3: Processing")
+            print("Table loading: Waiting for table to load")
 
             # Handle cookie consent first
-            handle_cookie_consent(driver, wait, logger)
+            handle_cookie_consent(driver, wait)
 
             # Wait for table to be present
             wait.until(
@@ -142,24 +105,24 @@ def scrape_ngx_data(**context):
             # Wait a bit for any overlays to disappear
             time.sleep(2)
 
-            log_step(logger, "Filter", "Clicking filter button")
+            print("Filter: Clicking filter button")
             filter_button = driver.find_element(
                 By.CLASS_NAME, "dataTables_length"
             )
             filter_button.click()
-            log_step(logger, "Filter", "Filter button clicked")
+            print("Filter: Filter button clicked")
             time.sleep(1)
 
-            log_step(logger, "Filter", "Selecting filter option for more rows")
+            print("Filter: Selecting filter option for more rows")
             filter_option = driver.find_element(
                 By.XPATH,
                 "//*[@id='latestdiclosuresEquities_length']/label/select/option[4]",
             )
             filter_option.click()
-            log_step(logger, "Filter", "Filter option selected")
+            print("Filter: Filter option selected")
             time.sleep(2)
 
-            log_step(logger, "Data extraction", "Extracting table HTML")
+            print("Data extraction: Extracting table HTML")
             table = wait.until(
                 EC.presence_of_element_located(
                     (By.ID, "latestdiclosuresEquities")
@@ -169,18 +132,16 @@ def scrape_ngx_data(**context):
             soup = BeautifulSoup(table_html, "html.parser")
 
             # Extract table header
-            log_step(logger, "Data extraction", "Extracting table header")
+            print("Data extraction: Extracting table header")
             table_head = soup.find("thead")
             headers = []
             if table_head:
                 header_cells = table_head.find_all("th")
                 headers = [cell.get_text(strip=True) for cell in header_cells]
-            log_step(
-                logger, "Data extraction", f"Extracted headers: {headers}"
-            )
+            print(f"Data extraction: Extracted headers: {headers}")
 
             # Extract table body
-            log_step(logger, "Data extraction", "Extracting table body")
+            print("Data extraction: Extracting table body")
             table_body = soup.find("tbody")
             data = []
             if table_body:
@@ -190,19 +151,13 @@ def scrape_ngx_data(**context):
                     row_data = [cell.get_text(strip=True) for cell in cells]
                     if row_data:
                         data.append(row_data)
-            log_step(
-                logger,
-                "Data extraction",
-                f"Extracted {len(data)} rows from table body",
+            print(
+                f"Data extraction: Extracted {len(data)} rows from table body"
             )
 
             # Save to CSV if data is found
             if headers and data:
-                log_step(
-                    logger,
-                    "Data processing",
-                    "Creating DataFrame and saving to CSV",
-                )
+                print("Data processing: Creating DataFrame and saving to CSV")
                 df = pd.DataFrame(data, columns=headers)
                 # Clean the 'Company' column to remove text in square brackets
                 if "Company" in df.columns:
@@ -212,9 +167,7 @@ def scrape_ngx_data(**context):
                         .str.strip()
                     )
                 df.to_csv(filename, index=False)
-                log_step(
-                    logger, "Data processing", f"Data saved to {filename}"
-                )
+                print(f"Data processing: Data saved to {filename}")
 
                 # Store file path in XCom for next task
                 context["task_instance"].xcom_push(
@@ -225,31 +178,33 @@ def scrape_ngx_data(**context):
                 )
 
             else:
-                log_error(logger, "No data found to save", retry=False)
+                print("No data found to save")
                 raise Exception("No data extracted from the website")
 
             driver.quit()
-            log_step(logger, "Cleanup", "Browser closed")
-            log_scraping_end(logger, success=True, data_rows=len(data))
+            print("Cleanup: Browser closed")
+            print(
+                f"Scraping completed successfully. Extracted {len(data)} rows of data."
+            )
+            print("=" * 60)
             break
 
         except Exception as e:
-            log_error(logger, str(e), retry=(attempt < 2))
+            print(f"Error occurred: {str(e)} - Will retry")
             if attempt < 2:
-                log_step(logger, "Retry", "Retrying in 2 seconds")
+                print("Retry: Retrying in 2 seconds")
                 time.sleep(2)
                 continue
             if driver:
                 driver.quit()
-            log_step(logger, "Cleanup", "Browser closed after error")
-            log_scraping_end(logger, success=False)
+            print("Cleanup: Browser closed after error")
+            print("Scraping failed.")
+            print("=" * 60)
             raise Exception(f"Failed to scrape data after 3 attempts: {e}")
 
 
 def send_email_with_attachment(**context):
     """Send email with the scraped CSV file as attachment."""
-    logger = get_logger("ngx_email")
-
     # Get file path from previous task
     csv_file_path = context["task_instance"].xcom_pull(
         task_ids="scrape_ngx_data", key="csv_file_path"
@@ -259,34 +214,26 @@ def send_email_with_attachment(**context):
     )
 
     if not csv_file_path or not os.path.exists(csv_file_path):
-        log_error(
-            logger, "CSV file not found or path not available", retry=False
-        )
+        print("CSV file not found or path not available")
         raise Exception("CSV file not found or path not available")
 
     # Send email using the notification system
     date_str = datetime.now().strftime("%Y-%m-%d")
-    log_step(
-        logger, "Email sending", f"Sending email with {data_rows} rows of data"
-    )
+    print(f"Email sending: Sending email with {data_rows} rows of data")
 
     success = send_ngx_data_email(csv_file_path, data_rows, date_str)
 
     if not success:
-        log_error(logger, "Failed to send email with attachment", retry=False)
+        print("Failed to send email with attachment")
         raise Exception("Failed to send email with attachment")
 
-    log_step(
-        logger,
-        "Email sending",
-        f"Email sent successfully with attachment: {csv_file_path}",
+    print(
+        f"Email sending: Email sent successfully with attachment: {csv_file_path}"
     )
 
 
 def cleanup_files(**context):
     """Delete the CSV file after email has been sent."""
-    logger = get_logger("ngx_cleanup")
-
     csv_file_path = context["task_instance"].xcom_pull(
         task_ids="scrape_ngx_data", key="csv_file_path"
     )
@@ -294,16 +241,8 @@ def cleanup_files(**context):
     if csv_file_path and os.path.exists(csv_file_path):
         try:
             os.remove(csv_file_path)
-            log_step(
-                logger,
-                "File cleanup",
-                f"Successfully deleted file: {csv_file_path}",
-            )
+            print(f"File cleanup: Successfully deleted file: {csv_file_path}")
         except Exception as e:
-            log_error(
-                logger,
-                f"Could not delete file {csv_file_path}: {e}",
-                retry=False,
-            )
+            print(f"Could not delete file {csv_file_path}: {e}")
     else:
-        log_step(logger, "File cleanup", "No file to delete or file not found")
+        print("File cleanup: No file to delete or file not found")
