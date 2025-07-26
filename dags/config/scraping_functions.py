@@ -55,6 +55,8 @@ def create_chrome_driver(driver_path, logger):
             service_args=["--verbose"],  
         )
 
+        options.binary_location = "/opt/chrome/chrome"
+
         # Configure Chrome options
         options = Options()
         options.add_argument("--headless")
@@ -63,22 +65,6 @@ def create_chrome_driver(driver_path, logger):
         options.add_argument("--disable-gpu")
         options.add_argument("--disable-extensions")
         options.add_argument("--start-maximized")
-        options.add_argument("--disable-web-security")
-        options.add_argument("--allow-running-insecure-content")
-        options.add_argument("--disable-features=VizDisplayCompositor")
-        options.add_argument(
-            "--remote-debugging-port=9222"
-        )  # Add debugging port
-        options.add_argument("--disable-blink-features=AutomationControlled")
-
-        # Set page load strategy to reduce timeout issues
-        options.page_load_strategy = "eager"
-
-        # Set timeouts explicitly in capabilities
-        options.add_experimental_option("useAutomationExtension", False)
-        options.add_experimental_option(
-            "excludeSwitches", ["enable-automation"]
-        )
 
         log_step(logger, "WebDriver", "Creating Chrome WebDriver instance")
 
@@ -115,7 +101,7 @@ def scrape_ngx_data(**context):
     filename = os.path.join(data_dir, f"data_{time_str}.csv")
 
     # ChromeDriver path
-    driver_dir = "/usr/local/bin/chromedriver"
+    driver_dir = "/opt/chrome/bin/chromedriver"
 
     # Start logging
     log_scraping_start(logger)
