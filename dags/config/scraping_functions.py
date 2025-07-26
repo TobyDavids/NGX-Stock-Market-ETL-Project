@@ -8,7 +8,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import os
 from notifications.email_notifications import send_ngx_data_email
 
@@ -65,15 +64,45 @@ def scrape_ngx_data(**context):
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--no-sandbox")
         options.add_argument("--headless")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-plugins")
+        options.add_argument("--disable-images")
+        options.add_argument("--disable-web-security")
+        options.add_argument("--allow-running-insecure-content")
+        options.add_argument("--window-size=1920,1080")
 
         print("WebDriver: Creating Remote Chrome WebDriver instance")
 
-        remote_webdriver = "selenium"
+        # Use environment variable or default to selenium container
+        selenium_url = "http://selenium:4444/wd/hub"
+        print(f"WebDriver: Using Selenium URL: {selenium_url}")
+
+        # Test connection to selenium server first
+        try:
+            import requests
+
+            response = requests.get(f"{selenium_url}/status", timeout=10)
+            if response.status_code == 200:
+                print("WebDriver: Selenium server is ready")
+            else:
+                print(
+                    f"WebDriver: Selenium server responded with status {response.status_code}"
+                )
+        except Exception as conn_error:
+            print(
+                f"WebDriver: Warning - Could not connect to selenium server: {conn_error}"
+            )
+
+        # Create WebDriver with explicit timeout settings
         driver = webdriver.Remote(
-            command_executor=f"http://{remote_webdriver}:4444/wd/hub",
-            options=options,
-            desired_capabilities=DesiredCapabilities.CHROME,
+            command_executor=selenium_url, options=options
         )
+
+        # Set page load timeout
+        driver.set_page_load_timeout(30)
+        driver.implicitly_wait(10)
+
         wait = WebDriverWait(driver, 20)
 
         print(f"Navigation: Navigating to URL: {url}")
@@ -83,6 +112,7 @@ def scrape_ngx_data(**context):
         if driver:
             driver.quit()
         print(f"Failed to initialize Chrome WebDriver: {e}")
+        print(f"WebDriver error details: {type(e).__name__}: {str(e)}")
         raise Exception(f"Chrome WebDriver initialization failed: {e}")
 
     for attempt in range(3):

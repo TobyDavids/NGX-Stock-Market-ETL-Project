@@ -46,6 +46,7 @@ venv.bak/
 # Logs
 *.log
 *.out
+test_selenium_connection.py
 
 # dotenv environment variables
 .env
