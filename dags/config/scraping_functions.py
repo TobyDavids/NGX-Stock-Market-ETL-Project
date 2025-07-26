@@ -46,6 +46,54 @@ def handle_cookie_consent(driver, wait, logger):
         log_step(logger, "Cookie consent", f"No popup found or error: {e}")
 
 
+def create_chrome_driver(driver_path, logger):
+    """Create Chrome WebDriver with proper configuration and error handling."""
+    try:
+        # Create service with explicit timeout settings
+        service = Service(
+            executable_path=driver_path,
+            service_args=['--verbose'],  # Add verbose logging
+        )
+        
+        # Configure Chrome options
+        options = Options()
+        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--start-maximized")
+        options.add_argument("--disable-web-security")
+        options.add_argument("--allow-running-insecure-content")
+        options.add_argument("--disable-features=VizDisplayCompositor")
+        options.add_argument("--remote-debugging-port=9222")  # Add debugging port
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        
+        # Set page load strategy to reduce timeout issues
+        options.page_load_strategy = 'eager'
+        
+        # Set timeouts explicitly in capabilities
+        options.add_experimental_option('useAutomationExtension', False)
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        
+        log_step(logger, "WebDriver", "Creating Chrome WebDriver instance")
+        
+        # Create driver with explicit timeout handling
+        driver = webdriver.Chrome(service=service, options=options)
+        
+        # Set timeouts after driver creation
+        driver.set_page_load_timeout(30)
+        driver.implicitly_wait(10)
+        
+        log_step(logger, "WebDriver", "Chrome WebDriver created successfully")
+        return driver
+        
+    except Exception as e:
+        log_error(logger, f"Failed to create Chrome WebDriver: {str(e)}", retry=False)
+        raise
+
+
 def scrape_ngx_data(**context):
     """Main scraping function for NGX stock market data."""
     # Setup logger
@@ -68,28 +116,19 @@ def scrape_ngx_data(**context):
     log_scraping_start(logger)
     log_step(logger, "Setup", f"ChromeDriver path: {driver_dir}")
 
-    service = Service(driver_dir)
-    log_step(logger, "Chrome WebDriver", "Starting service")
-
-    options = Options()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--start-maximized")
-    options.add_argument("--disable-web-security")
-    options.add_argument("--allow-running-insecure-content")
-    options.add_argument("--disable-features=VizDisplayCompositor")
+    # Initialize driver with improved error handling
+    driver = None
     try:
-        driver = webdriver.Chrome(service=service, options=options)
+        driver = create_chrome_driver(driver_dir, logger)
         wait = WebDriverWait(driver, 20)
+        
         log_step(logger, "Navigation", f"Navigating to URL: {url}")
         driver.get(url)
+        
     except Exception as e:
-        log_error(
-            logger, f"Failed to initialize Chrome WebDriver: {e}", retry=False
-        )
+        if driver:
+            driver.quit()
+        log_error(logger, f"Failed to initialize Chrome WebDriver: {e}", retry=False)
         raise Exception(f"Chrome WebDriver initialization failed: {e}")
 
     for attempt in range(3):
@@ -207,7 +246,8 @@ def scrape_ngx_data(**context):
                 log_step(logger, "Retry", "Retrying in 2 seconds")
                 time.sleep(2)
                 continue
-            driver.quit()
+            if driver:
+                driver.quit()
             log_step(logger, "Cleanup", "Browser closed after error")
             log_scraping_end(logger, success=False)
             raise Exception(f"Failed to scrape data after 3 attempts: {e}")
