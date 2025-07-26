@@ -20,7 +20,7 @@ jobs:
       - name: Sync DAGs to Airflow server
         run: |
           echo "Syncing DAGs to /home/github/airflow-v2/dags"
-          rsync -avz --no-perms --no-owner --no-group ./dags/ github@164.68.119.226:/home/github/airflow-v2/dags/
+          rsync -avz  ./dags/ /home/github/airflow-v2/dags/
 
       - name: Compare requirements and update missing ones
         id: check_missing
