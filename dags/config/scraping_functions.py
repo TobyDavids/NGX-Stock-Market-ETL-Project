@@ -78,16 +78,19 @@ def scrape_ngx_data(**context):
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-extensions")
     options.add_argument("--start-maximized")
-    options.add_argument("--disk-cache-size=1")
-    options.add_argument("--media-cache-size=1")
-    options.add_argument("--incognito")
-    options.add_argument("--remote-debugging-port=9222")
-    options.add_argument("--aggressive-cache-discard")
-
-    driver = webdriver.Chrome(service=service, options=options)
-    wait = WebDriverWait(driver, 20)
-    log_step(logger, "Navigation", f"Navigating to URL: {url}")
-    driver.get(url)
+    options.add_argument("--disable-web-security")
+    options.add_argument("--allow-running-insecure-content")
+    options.add_argument("--disable-features=VizDisplayCompositor")
+    try:
+        driver = webdriver.Chrome(service=service, options=options)
+        wait = WebDriverWait(driver, 20)
+        log_step(logger, "Navigation", f"Navigating to URL: {url}")
+        driver.get(url)
+    except Exception as e:
+        log_error(
+            logger, f"Failed to initialize Chrome WebDriver: {e}", retry=False
+        )
+        raise Exception(f"Chrome WebDriver initialization failed: {e}")
 
     for attempt in range(3):
         try:
