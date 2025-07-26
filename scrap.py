@@ -35,8 +35,8 @@ url = "https://ngxgroup.com/exchange/data/equities-price-list/"
 filename = os.path.join(data_dir, f"data_{time_str}.csv")
 
 # ChromeDriver path
-# driver_dir = "/Users/user/Downloads/chromedriver-mac-arm64/chromedriver"
-driver_dir = "/usr/local/bin/chromedriver"
+driver_dir = "/Users/user/Downloads/chromedriver-mac-arm64/chromedriver"
+# driver_dir = "/usr/local/bin/chromedriver"
 
 with open(log_file, "w") as f:
     f.write(f"{time_str} - Log cleared\n")
@@ -81,7 +81,7 @@ def scrape_data():
     options.add_argument("--remote-debugging-port=9222")
     options.add_argument("--aggressive-cache-discard")
 
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(service=service)
     wait = WebDriverWait(driver, 20)  # Increased timeout to 20 seconds
     log_message(time_str, f"Navigating to URL: {url}")
     driver.get(url)

@@ -1,0 +1,50 @@
+name: Sync DAGs & Update Missing Requirements
+
+on:
+  push:
+    paths:
+      - 'dags/**'
+      - 'requirements.txt'
+    branches:
+      - main
+
+jobs:
+  sync-dags:
+    name: Sync DAGs & Update Missing Requirements
+    runs-on: airflow  
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync DAGs to Airflow server
+        run: |
+          echo "Syncing DAGs to /home/github/airflow-v2/dags"
+          rsync -avz ./dags/ /home/github/airflow-v2/dags/
+
+      - name: Compare requirements and update missing ones
+        id: check_missing
+        run: |
+          SERVER_REQ="/home/github/airflow-v2/requirements.txt"
+          GITHUB_REQ="./requirements.txt"
+
+          echo "Checking for missing packages in server requirements"
+          missing=false
+          while IFS= read -r pkg; do
+            if ! grep -qx "$pkg" "$SERVER_REQ"; then
+              echo "$pkg" >> "$SERVER_REQ"
+              echo "Added missing package: $pkg"
+              missing=true
+            fi
+          done < "$GITHUB_REQ"
+
+          echo "missing=$missing" >> $GITHUB_OUTPUT
+
+      - name: Rebuild Airflow if requirements were updated
+        if: steps.check_missing.outputs.missing == 'true'
+        run: |
+          echo "Requirements updated. Rebuilding Airflow"
+          cd /home/github/airflow-v2
+          docker compose down
+          docker compose build
+          docker compose up -d
