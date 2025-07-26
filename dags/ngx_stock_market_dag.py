@@ -37,7 +37,7 @@ dag = DAG(
     "ngx_stock_market_etl",
     default_args=default_args,
     description="Scrape NGX stock market data and send via email",
-    schedule_interval="0 17 * * 1-5",  # Runs at 5 PM  (Nigeria time), Monday to Friday
+    schedule="0 17 * * 1-5",  # Runs at 5 PM  (Nigeria time), Monday to Friday
     catchup=False,
     tags=["ngx", "stock-market", "etl", "scraping"],
 )
