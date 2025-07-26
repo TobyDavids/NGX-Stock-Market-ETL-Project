@@ -4,7 +4,6 @@ Email notifications for NGX Stock Market ETL DAG
 This module contains email notification functions for task alerts and general email sending.
 """
 
-from airflow.models import Variable
 import os
 from config.email_config import send_email
 
