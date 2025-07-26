@@ -52,13 +52,12 @@ def create_chrome_driver(driver_path, logger):
         # Create service with explicit timeout settings
         service = Service(
             executable_path=driver_path,
-            service_args=["--verbose"],  
+            service_args=["--verbose"],
         )
-
-        options.binary_location = "/opt/chrome/chrome"
 
         # Configure Chrome options
         options = Options()
+        options.binary_location = "/opt/chrome/chrome"
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")

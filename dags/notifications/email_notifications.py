@@ -40,13 +40,46 @@ def notification_email(context, state):
 
     subject = f"Airflow Alert: Task in DAG '{dag}' has {state.upper()}"
     body = f"""
-    Hey {dag_owner}
-
-    The task {task} in dag {dag} running in Ubuntu Server \
-        has {state} for run date {exec_date}
-
-    Here is the log url: {log}
-    """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='utf-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+            <title>Airflow Task Notification</title>
+        </head>
+        <body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background-color: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #2c3e50; margin: 0; font-size: 24px;">Airflow Task Notification</h1>
+                        <p style="color: #7f8c8d; margin: 10px 0 0 0; font-size: 16px;">DAG: <strong>{dag}</strong></p>
+                    </div>
+                    <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
+                        <h2 style="color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;">Task Details</h2>
+                        <p style="color: #34495e; margin: 0; line-height: 1.6;">
+                            <strong>Task:</strong> {task}<br>
+                            <strong>State:</strong> <span style='color: {'#e74c3c' if state.lower() == 'failed' else '#27ae60'}; font-weight: bold;'>{state.upper()}</span><br>
+                            <strong>Run Date:</strong> {exec_date}<br>
+                            <strong>Owner:</strong> {dag_owner}
+                        </p>
+                    </div>
+                    <div style="background-color: #e8f4f8; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
+                        <h2 style="color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;">Log URL</h2>
+                        <p style="color: #34495e; margin: 0; line-height: 1.6;">
+                            <a href='{log}' style='color: #2980b9; text-decoration: underline;'>{log}</a>
+                        </p>
+                    </div>
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <p style="color: #7f8c8d; margin: 0; font-size: 14px;">
+                            This is an automated notification from your Airflow server.<br>
+                            Please do not reply to this email.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
 
     return send_email(email_receiver, subject, body, content_type="html")
 
