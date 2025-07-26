@@ -25,10 +25,20 @@ def send_email(
         resend_api_key = Variable.get("RESEND_API_KEY")
         resend.api_key = resend_api_key
 
-        # Prepare parameters for Resend
+        # Prepare and validate recipients for Resend
+        if isinstance(receiver, str):
+            # Split comma-separated emails and strip whitespace
+            to_list = [
+                email.strip() for email in receiver.split(",") if email.strip()
+            ]
+        elif isinstance(receiver, list):
+            to_list = [email.strip() for email in receiver if email.strip()]
+        else:
+            to_list = []
+
         params: resend.Emails.SendParams = {
             "from": email_sender,
-            "to": [receiver] if isinstance(receiver, str) else receiver,
+            "to": to_list,
             "subject": subject,
             "html" if content_type == "html" else "text": body,
         }
