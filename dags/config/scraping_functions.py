@@ -46,35 +46,38 @@ def handle_cookie_consent(driver, wait, logger):
         log_step(logger, "Cookie consent", f"No popup found or error: {e}")
 
 
-def create_chrome_driver(driver_path, logger):
+def create_chrome_driver(logger):
     """Create Chrome WebDriver with proper configuration and error handling."""
     try:
-        # Create service with explicit timeout settings
-        service = Service(
-            executable_path=driver_path,
-            service_args=["--verbose"],
-        )
-
         # Configure Chrome options
-        options = Options()
-        options.binary_location = "/opt/chrome/chrome"
-        options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
+        options = webdriver.ChromeOptions()
+        options.add_argument("--ignore-ssl-errors=yes")
+        options.add_argument("--ignore-certificate-errors")
+        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+        options.add_argument(f"user-agent={user_agent}")
         options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--headless")
         options.add_argument("--disable-gpu")
         options.add_argument("--disable-extensions")
         options.add_argument("--start-maximized")
 
-        log_step(logger, "WebDriver", "Creating Chrome WebDriver instance")
+        log_step(
+            logger, "WebDriver", "Creating Remote Chrome WebDriver instance"
+        )
 
-        # Create driver with explicit timeout handling
-        driver = webdriver.Chrome(service=service, options=options)
+        remote_webdriver = "remote_chromedriver"
+        driver = webdriver.Remote(
+            command_executor=f"http://{remote_webdriver}:4444/wd/hub",
+            options=options,
+        )
 
-        # Set timeouts after driver creation
         driver.set_page_load_timeout(30)
         driver.implicitly_wait(10)
 
-        log_step(logger, "WebDriver", "Chrome WebDriver created successfully")
+        log_step(
+            logger, "WebDriver", "Remote Chrome WebDriver created successfully"
+        )
         return driver
 
     except Exception as e:
@@ -99,17 +102,15 @@ def scrape_ngx_data(**context):
     url = "https://ngxgroup.com/exchange/data/equities-price-list/"
     filename = os.path.join(data_dir, f"data_{time_str}.csv")
 
-    # ChromeDriver path
-    driver_dir = "/opt/chrome/bin/chromedriver"
 
     # Start logging
     log_scraping_start(logger)
-    log_step(logger, "Setup", f"ChromeDriver path: {driver_dir}")
+    log_step(logger, "Setup", f"ChromeDriver path")
 
     # Initialize driver with improved error handling
     driver = None
     try:
-        driver = create_chrome_driver(driver_dir, logger)
+        driver = create_chrome_driver(logger)
         wait = WebDriverWait(driver, 20)
 
         log_step(logger, "Navigation", f"Navigating to URL: {url}")
