@@ -47,6 +47,7 @@ venv.bak/
 *.log
 *.out
 test_selenium_connection.py
+docker-compose.override.yml
 
 # dotenv environment variables
 .env
