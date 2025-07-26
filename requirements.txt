@@ -2,7 +2,7 @@ beautifulsoup4==4.12.2
 requests==2.31.0
 selenium==4.34.2
 pandas>=2.0.0
-urllib3==1.26.18
+urllib3==2.5.0
 resend==2.10.0
 
 
