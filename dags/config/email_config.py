@@ -64,4 +64,3 @@ def send_email(
     except Exception as e:
         print(f"Failed to send email: {str(e)}")
         return False
-

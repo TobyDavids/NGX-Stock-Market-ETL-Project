@@ -1,4 +1,4 @@
-name: Sync DAGs & Update Missing Requirements
+name: Deploy DAGs 
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       - 'requirements.txt'
     branches:
       - main
+    
 
 jobs:
   sync-dags:
@@ -20,7 +21,7 @@ jobs:
       - name: Sync DAGs to Airflow server
         run: |
           echo "Syncing DAGs to /home/github/airflow-v2/dags"
-          rsync -avz  ./dags/ /home/github/airflow-v2/dags/
+          rsync -avz --no-group ./dags/ /home/github/airflow-v2/dags/
 
       - name: Compare requirements and update missing ones
         id: check_missing
