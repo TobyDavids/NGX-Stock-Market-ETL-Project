@@ -1,10 +1,6 @@
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
-from airflow.sdk import Variable
 import os
+from airflow.sdk import Variable
+import resend
 
 
 def send_email(
@@ -26,40 +22,39 @@ def send_email(
     try:
         # Get email configuration from Variables
         email_sender = "notifications@dataengineeringcommunity.com"
-        email_password = Variable.get("email_password")
-        mail_server = Variable.get("MAIL_SERVER")
-        email_port = int(Variable.get("email_port"))
+        resend_api_key = Variable.get("RESEND_API_KEY")
+        resend.api_key = resend_api_key
 
-        # Create message
-        msg = MIMEMultipart()
-        msg["From"] = email_sender
-        msg["To"] = receiver
-        msg["Subject"] = subject
-
-        # Attach body
-        msg.attach(MIMEText(body, content_type))
+        # Prepare parameters for Resend
+        params: resend.Emails.SendParams = {
+            "from": email_sender,
+            "to": [receiver] if isinstance(receiver, str) else receiver,
+            "subject": subject,
+            "html" if content_type == "html" else "text": body,
+        }
 
         # Attach file if provided
         if attachment_path and os.path.exists(attachment_path):
             with open(attachment_path, "rb") as attachment:
-                part = MIMEBase("application", "octet-stream")
-                part.set_payload(attachment.read())
+                file_data = attachment.read()
+                import base64
 
-            encoders.encode_base64(part)
-            part.add_header(
-                "Content-Disposition",
-                f"attachment; filename= {os.path.basename(attachment_path)}",
-            )
-            msg.attach(part)
+                encoded_content = base64.b64encode(file_data).decode("utf-8")
+                params["attachments"] = [
+                    {
+                        "filename": os.path.basename(attachment_path),
+                        "content": encoded_content,
+                    }
+                ]
 
-        # Send email
-        with smtplib.SMTP(mail_server, email_port) as server:
-            server.starttls()
-            server.login(email_sender, email_password)
-            server.send_message(msg)
-
-        print(f"Email sent successfully to {receiver}")
-        return True
+        # Send email using Resend
+        email = resend.Emails.send(params)
+        if getattr(email, "id", None):
+            print(f"Email sent successfully to {receiver}")
+            return True
+        else:
+            print(f"Failed to send email: {email}")
+            return False
 
     except Exception as e:
         print(f"Failed to send email: {str(e)}")
