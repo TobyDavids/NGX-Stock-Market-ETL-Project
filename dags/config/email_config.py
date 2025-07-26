@@ -59,8 +59,16 @@ def send_email(
 
         # Send email using Resend
         email = resend.Emails.send(params)
-        if getattr(email, "id", None):
-            print(f"Email sent successfully to {receiver}")
+
+        # Check if email was sent successfully
+        # Resend API returns a dictionary with 'id' key on success
+        if isinstance(email, dict) and email.get("id"):
+            print(
+                f"Email sent successfully to {receiver} with ID: {email['id']}"
+            )
+            return True
+        elif hasattr(email, "id") and email.id:
+            print(f"Email sent successfully to {receiver} with ID: {email.id}")
             return True
         else:
             print(f"Failed to send email: {email}")
