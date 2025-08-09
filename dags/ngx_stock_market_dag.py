@@ -26,7 +26,7 @@ default_args = {
     "start_date": datetime(2025, 7, 24),
     "email_on_failure": False,
     "email_on_retry": False,
-    "retries": 1,
+    "retries": 3,
     "retry_delay": timedelta(minutes=5),
     "on_failure_callback": task_state_alert
 }
