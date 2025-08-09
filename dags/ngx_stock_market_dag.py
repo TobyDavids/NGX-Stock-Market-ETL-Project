@@ -27,7 +27,7 @@ default_args = {
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,
-    "retry_delay": timedelta(seconds=10),
+    "retry_delay": timedelta(minutes=5),
     "on_failure_callback": task_state_alert
 }
 
